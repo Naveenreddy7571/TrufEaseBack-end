@@ -30,21 +30,14 @@ public class Booking {
     private LocalDateTime endTime;
 
     private LocalDate bookedDate;
-
-    private LocalDateTime createdAt;
-
-    private LocalDateTime updatedAt;
+    private Boolean Status;
+    private Double bookedPrice;
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
         bookedDate = LocalDate.now();
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 
 
 
