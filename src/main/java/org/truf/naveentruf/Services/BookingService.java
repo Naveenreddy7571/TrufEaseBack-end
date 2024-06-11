@@ -53,6 +53,14 @@ public class BookingService {
         return bookings.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
+    public List<BookingDto> getAllBookings()
+    {
+        List<Booking> bookings = bookingRepository.findAll();
+        return bookings.stream().map(this::convertToDto).collect(Collectors.toList());
+    }
+
+
+
     private BookingDto convertToDto(Booking booking) {
         BookingDto dto = new BookingDto();
         dto.setGroundId(booking.getGround().getId());
@@ -61,4 +69,6 @@ public class BookingService {
         dto.setEndTime(booking.getEndTime());
         return dto;
     }
+
+
 }
