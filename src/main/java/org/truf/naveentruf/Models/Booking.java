@@ -30,7 +30,7 @@ public class Booking {
     private LocalDateTime endTime;
 
     private LocalDate bookedDate;
-    private Boolean Status;
+    private Boolean Status=false;
     private Double bookedPrice;
 
     @PrePersist

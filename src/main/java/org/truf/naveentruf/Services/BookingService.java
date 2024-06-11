@@ -1,10 +1,13 @@
 package org.truf.naveentruf.Services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.truf.naveentruf.CustomExceptions.InsufficientBalanceException;
+import org.truf.naveentruf.Dtos.AllBookingsGround;
 import org.truf.naveentruf.Dtos.BookingDto;
 import org.truf.naveentruf.CustomExceptions.BookingException;
+import org.truf.naveentruf.Dtos.UserDto;
 import org.truf.naveentruf.Models.Booking;
 import org.truf.naveentruf.Models.Truf;
 import org.truf.naveentruf.Models.TrufUser;
@@ -13,6 +16,9 @@ import org.truf.naveentruf.Repositories.GroundRepository;
 import org.truf.naveentruf.Repositories.UserRepository;
 
 import javax.swing.text.html.Option;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -57,7 +63,7 @@ public class BookingService {
         booking.setStartTime(bookingDto.getStartTime());
         booking.setEndTime(bookingDto.getEndTime());
         booking.setBookedPrice(ground.getPrice());
-
+        booking.setStatus(Boolean.TRUE);
         return bookingRepository.save(booking);
     }
 
@@ -86,6 +92,11 @@ public class BookingService {
         }
     }
 
+    public List<UserDto> getAllCustomers()
+    {
+        List<TrufUser> trufUserList =bookingRepository.findAll().stream().map(Booking::getUser).distinct().toList();
+        return convertTrufUsersToUserDtos(trufUserList);
+    }
 
 
     private BookingDto convertToDto(Booking booking) {
@@ -97,5 +108,52 @@ public class BookingService {
         return dto;
     }
 
+    private List<UserDto> convertTrufUsersToUserDtos(List<TrufUser> trufUserList)
+    {
+        return  trufUserList.stream().map(user -> new UserDto(
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getNumber(),
+                user.getAddress())).collect(Collectors.toList());
+
+    }
+
+    public List<AllBookingsGround> bookedGroundInfo()
+    {
+        List<Booking> bookingList = bookingRepository.findAll();
+        List<AllBookingsGround> dto = new ArrayList<>();
+        if(bookingList.isEmpty())
+        {
+            return null;
+        }
+        for(Booking bookininfo : bookingList)
+        {
+            AllBookingsGround bookingsGroundDto = new AllBookingsGround();
+            bookingsGroundDto.setGroundName(bookininfo.getGround().getGroundName());
+            bookingsGroundDto.setBookingID(bookininfo.getId());
+            bookingsGroundDto.setCustomerName(bookininfo.getUser().getFirstName());
+            bookingsGroundDto.setCustomerNumber(bookininfo.getUser().getNumber());
+            String bookingSlot = formatBookingSlot(bookininfo.getStartTime(),bookininfo.getEndTime());
+            bookingsGroundDto.setBookingSlot(bookingSlot);
+            bookingsGroundDto.setPaidAmount(bookininfo.getBookedPrice());
+            bookingsGroundDto.setStatus(bookininfo.getStatus());
+            bookingsGroundDto.setBookingDate(bookininfo.getBookedDate());
+            dto.add(bookingsGroundDto);
+        }
+        return dto;
+    }
+
+
+    private String formatBookingSlot(LocalDateTime startTime, LocalDateTime endTime) {
+        String formattedStartTime = formatTime(startTime);
+        String formattedEndTime = formatTime(endTime);
+        return formattedStartTime + " - " + formattedEndTime;
+    }
+
+    private static String formatTime(LocalDateTime dateTime) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");
+        return dateTime.format(formatter);
+    }
 
 }

@@ -63,4 +63,17 @@ public class BookingController {
             return new ResponseEntity<>(e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping("/booked-customers")
+    public ResponseEntity<?> getAllBookedCustomers()
+    {
+            return new ResponseEntity<>(bookingService.getAllCustomers(),HttpStatus.OK);
+
+    }
+
+    @GetMapping("/booked-grounds")
+    public ResponseEntity<?> bookedGroundInfo()
+    {
+        return new ResponseEntity<>(bookingService.bookedGroundInfo(),HttpStatus.OK) ;
+    }
 }
